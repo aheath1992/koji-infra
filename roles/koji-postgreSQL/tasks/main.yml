@@ -1,0 +1,25 @@
+---
+# tasks file for roles/koji-postgreSQL
+
+- name: Install the python3-passlib package
+  package:
+    name: python3-passlib
+    state: present
+
+- name: Install PostgreSQL Server and contrib
+  package:
+    name: "{{ postgresql_packages }}"
+    state: present
+
+- name: Ensure PostgreSQL data directory exists
+  file:
+    path: "{{ postgresql_data_dir }}"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    state: directory
+    mode: 0700
+
+- name: Check if PostgreSQL database is initialized.
+  stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: pgdata_dir_version

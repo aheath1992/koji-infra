@@ -1,0 +1,15 @@
+---
+
+- name: Exclude packages, BaseOS
+  ini_file: dest=/etc/yum.repos.d/CentOS-Linux-BaseOS.repo
+        section=baseos
+        option=exclude
+        value='{{ (ansible_local.baserepo.base.exclude | default("") | replace("postgresql*", "") | trim ~ " postgresql* ") | trim }}'
+        backup=yes
+
+- name: Exclude packages, AppStream
+  ini_file: dest=/etc/yum.repos.d/CentOS-Linux-AppStream.repo
+        section=appstream
+        option=exclude
+        value='{{ (ansible_local.baserepo.base.exclude | default("") | replace("postgresql*", "") | trim ~ " postgresql* ") | trim }}'
+        backup=yes

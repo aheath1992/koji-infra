@@ -1,0 +1,25 @@
+<VirtualHost *:80>
+  ServerName people.centos.org
+  CustomLog logs/people.centos.org_access.log combined
+  ErrorLog logs/people.centos.org_error.log
+  DocumentRoot /var/www/people
+  # Global for each user directory
+
+  <Directory "/var/www/people">
+    Options Indexes FollowSymLinks
+    <IfVersion < 2.4>
+      Order allow,deny
+      Allow from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+      Require all granted
+    </IfVersion>
+  </Directory>
+
+  RewriteEngine On
+  RewriteCond $1 !^.well-known
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+
+</VirtualHost>
+

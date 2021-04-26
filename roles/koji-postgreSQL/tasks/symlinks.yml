@@ -1,9 +1,0 @@
----
-
-- name: Create symlink for BaseOS repo fact gathering
-  file: src=/etc/yum.repos.d/CentOS-Linux-BaseOS.repo dest=/etc/ansible/facts.d/baserepo.fact state=link
-  register: repo_fact_file
-
-- name: Create symlink for AppStream repo fact gathering
-  file: src=/etc/yum.repos.d/CentOS-Linux-AppStream.repo dest=/etc/ansible/facts.d/appstreamrepo.fact state=link
-  register: repo_fact_file

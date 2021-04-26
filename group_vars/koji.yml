@@ -1,0 +1,9 @@
+# Do we need to use specific repo to deploy newer/specific koji pkgs
+kojid_kojihub_repo: True
+kojid_kojihub_repo_url: http://internal.repo.org/builder/$basearch/
+kojid_kojihub_repo_gpgcheck: True
+kojid_kojihub_repo_gpgkey: RPM-GPG-KEY-CentOS-Infra
+
+# Storage settings
+koji_mountpoint: /mnt/kojishare
+koji_mnt_symlink_workaround: True

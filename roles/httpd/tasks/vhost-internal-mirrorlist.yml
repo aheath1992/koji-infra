@@ -1,0 +1,29 @@
+# This task will need a httpd_mirrorlist_internal_url pointing to the baseurl of a internal mirror, looking like mirror.centos.org
+- name: Ensuring with have minimal php pkgs
+  yum:
+    name: php
+    state: installed
+  notify: restart_httpd
+
+- name: Ensuring we have local directories
+  file:
+    state: directory
+    path: /var/www/internal-mirrorlist
+
+- name: Simple php mirrorlist
+  template:
+    src: internal-mirrorlist/index.php.j2
+    dest: /var/www/internal-mirrorlist/index.php
+    mode: 0644
+  tags:
+    - script
+
+- name: internal-mirrorlist vhost config
+  template:
+    src: 15_internal-mirrorlist.conf.j2
+    dest: /etc/httpd/conf.d/15_internal-mirrorlist.conf
+    mode: 0644
+  notify:
+    - reload_httpd
+
+

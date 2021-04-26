@@ -1,0 +1,4 @@
+- src: https://github.com/CentOS/ansible-role-httpd
+  name: httpd
+- src: https://github.com/CentOS/ansible-role-postgresql
+  name: postgresql

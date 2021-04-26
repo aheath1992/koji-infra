@@ -1,0 +1,4 @@
+- name: local Postgresql tasks
+  block:
+  - include_role:
+      name: postgresql

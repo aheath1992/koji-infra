@@ -1,0 +1,80 @@
+# Default Variables for httpd role
+# Should iptables be open by default ?
+httpd_public: True
+
+# Should openssl/mod_ssl be installed by default
+httpd_tls: False
+
+# Central LetsEncrypt node for the cerbot redirection
+httpd_certbot_fqdn: certbot.domain.com
+
+# Apache httpd settings (see https://httpd.apache.org/docs/current/mod/mpm_common.html)
+httpd_maxrequestworkers: 512
+
+# Page information
+httpd_html_autoindex_title: "CentOS"
+httpd_html_autoindex_content: ""
+
+# Some settings for included apache httpd modules
+# These will be configured system-wide/global and not per vhost
+httpd_mod_qos: False
+# If we have it to True, we can just inject snippet for mod_qos 
+# See http://mod-qos.sourceforge.net/ for possible settings
+httpd_mod_qos_snippet: |
+  QS_Status on
+  QS_MaxClients 500
+  QS_ClientEntries 100000
+  QS_SrvMaxConn 10000
+  QS_SrvMaxConnClose  60%
+  QS_SrvMaxConnPerIP  20
+  QS_ClientEventBlockCount 20 600
+  QS_SetEnvIfStatus        QS_SrvMaxConnPerIP QS_Block
+  QS_SetEnvIfStatus        BrokenConnection   QS_Block
+  QS_SetEnvIfStatus        NullConnection     QS_Block
+
+
+
+# Zabbix monitoring
+httpd_zabbix_templates:
+  - Template CentOS http server
+httpd_zabbix_groups:
+  - CentOS HTTP servers
+
+httpd_tls_zabbix_templates:
+  - Template CentOS - https SSL Cert Check External
+httpd_tls_zabbix_groups:
+  - CentOS HTTPS servers
+
+
+# For reposnap task
+reposnap_local_dir: /srv/reposnap
+reposnap_rsync_from: msync.centos.org::centos/
+
+# For SCL php task
+scl_php_ver: 73
+
+# For www task
+httpd_www_rootdir: /var/www/centos_website
+httpd_www_hostname: www.centos.org
+httpd_www_aliases: 
+  - centos.org
+httpd_www_push_users:
+  - login_name: wwwpush
+    ssh_pub_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDRL1TUUwizrKopU5AOvJR6jCBAIA41Jr5nAZBZT3gQQAzEETgxeDJXGfiG9vZnfNMZuVoiomgxl+u8HaiyKV8CiXOiE/Afj+6qsdmbUlAkOCs+rAHoFiaSmkKP8gC7yMeBAO22FRDH/P+OAHOwFxvcaeOKb86xHPlRePOMABRWZBpdUNYUOE2ZD6jn2ywnhxAr2BLOmFKbIJsMirvQS3v4qbjyzmcyje4qnw9Ypen79VGz/FukEc8tJKhrD5dvncNEcdA0WJ/4fjHv30fpeAkil3ChSkH5u0d8DESoBba21f6SySYlAwJmZVUM3Orb4hgMkP+JXIvL/UcZMyC7pEmFwMGXcsQigInwLj3RMZ6CKbZ6VTtcYEGZ4h7uD8YJNwGsdDcWYFOnyIZmsY1KrQ4oIBv3WBo29VcdzoyZaatnieQFa5mc+mO7WWdGHp/rd1r0OdhjbgbgjViTGaiVN+YDXWth7GBgvEVQrWZRmYGOmbKyJQgv25lFpQvRLw5WSPP3uEoXVLk3KpoPUckMd2i5N8HutaF16psP0MaAx3NxoRFPHI/+ko5LY3pNcIQtAwmIRbmvdit7KZkF3SBwxZ5bET/XdlviOkT9HtGDhNoEZ6ESIK4RyLIlHbXsDWFu2nkGNlTcv4EJxFHrsoaPW323sdsjhSgeB8Ip0587Tp5imQ==
+
+# www staging task where website is rendered
+httpd_www_local_user: centos
+httpd_www_git_upstream: https://git.centos.org/centos/centos.org.git
+# Servers we need to push content to
+httpd_www_servers: "web1.test.centos.org web2.test.centos.org"
+httpd_stg_zabbix_templates:
+  - Template CentOS website render
+
+httpd_www_snippet: |
+  # This is a snippet block coming from ansible inventory
+
+
+# For internal-mirrorlist task
+# FQDN of internal mirror we want to redirect yum/dnf clients to
+httpd_mirrorlist_internal_url: mirror.centos.org

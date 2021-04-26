@@ -1,0 +1,5 @@
+- block:
+    - name: Specific PKI dir for koji
+      file:
+        path: /etc/pki/koji
+        state: directory

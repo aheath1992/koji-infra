@@ -1,3 +1,0 @@
----
-- import_playbook: koji-prerequisite.yml
-- import_playbook: koji-postgresql.yml

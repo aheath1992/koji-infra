@@ -1,0 +1,60 @@
+---
+- hosts: koji
+  remote_user: root
+  pre_tasks:
+
+    - name: Importing specific distro variables
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "group_vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_distribution }}.yml"
+      tags:
+        - vars
+
+    - name: Install nessary packages
+      yum:
+        name: "{{ setup_pkg }}"
+        state: latest
+
+    - name: Start Firewalld
+      systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+  tasks:
+
+
+    - include_role:
+        name: httpd
+      vars:
+        - httpd_tls: True
+
+    - name: Add the kojihub repo if needed
+      template:
+        src: kojihub.repo.j2
+        dest: /etc/yum.repos.d/kojihub.repo
+        mode: 0644
+      when: kojid_kojihub_repo
+      tags:
+        - repo
+
+    - name: Adding repo gpg key if needed
+      copy: 
+        src: "files/{{ kojid_kojihub_repo_gpgkey }}"
+        dest: "/etc/pki/rpm-gpg/{{ kojid_kojihub_repo_gpgkey }}"
+      when: kojid_kojihub_repo and kojid_kojihub_repo_gpgcheck  
+      tags:
+        - repo
+
+    - name: Ensuring we have some pkgs installed
+      yum:
+        name: "{{ kojihub_pkgs }}"
+        state: latest
+
+    - include_tasks: tasks/storage.yml
+
+    - include_tasks: tasks/tls.yml
+
+    - include_tasks: tasks/postgresql.yml
+      tags:
+          - db

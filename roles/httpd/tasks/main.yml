@@ -1,0 +1,105 @@
+- name: Ensuring httpd is installed
+  yum: 
+    name: httpd 
+    state: installed
+
+- name: Systemd snippet directory
+  file:
+    path: /etc/systemd/system/httpd.service.d/
+    state: directory
+
+- name: Default basic config
+  template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/httpd/conf.d/{{ item }}"
+    mode: 0644
+  with_items:
+    - 01_common.conf
+    - welcome.conf
+  notify: restart_httpd 
+
+- name: Distribute default CentOS header files
+  copy:
+    src: "{{ item }}"
+    dest: /var/www/
+  with_items:
+    - centos
+    - centos-design
+
+- name: Creating CentOS default header
+  template:
+    src: header.html.j2
+    dest: /var/www/centos-design/header-{{ httpd_html_autoindex_title | lower | replace(" ","-") }}.html
+    mode: 0644
+
+- name: Ensuring httpd service is started
+  service: 
+    name: httpd 
+    state: started 
+    enabled: true
+
+#- name: Opening up httpd rule
+#  include_role:
+#    name: iptables
+#    tasks_from: custom-policy
+#  vars:
+#    iptables_policy_name: httpd
+#    iptables_protocol: tcp
+#    iptables_port: "80"
+#    iptables_source: "0.0.0.0/0"
+#  when: httpd_public
+#  tags:
+#    - iptables
+#
+#- name: Opening up httpd rule over ipv6
+#  include_role:
+#    name: iptables
+#    tasks_from: custom-policy-ipv6
+#  vars:
+#    iptables_policy_name: httpd
+#    iptables_protocol: tcp
+#    iptables_port: "80"
+#    iptables_source: "::/0"
+#  when: httpd_public
+#  tags:
+#    - iptables
+
+- name: Opening up httpd rule
+  firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+
+- include_tasks: tls.yml
+  when: httpd_tls
+
+
+- block:
+    - name: Ensure we have mod_qos pkg installed
+      yum:
+        name: mod_qos
+        state: latest
+
+    - name: Distributing mod_qos config
+      template:
+        src: 01_qos.conf.j2
+        dest: /etc/httpd/conf.d/01_qos.conf
+      notify:
+        reload_httpd
+  when: httpd_mod_qos
+
+#- block: 
+#    - name: Configuring agent in Zabbix server
+#      include_role:
+#        name: zabbix-server
+#        tasks_from: agent_config
+#      vars:
+#        zabbix_templates: "{{ httpd_zabbix_templates }}"
+#        zabbix_groups: "{{ httpd_zabbix_groups }}"
+#  delegate_to: "{{ zabbix_api_srv }}"  
+#  tags:
+#    - monitoring
+#  when: zabbix_api_srv is defined and zabbix_api_srv != 'None'
+  
